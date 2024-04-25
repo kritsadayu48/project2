@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project1/confirmpayment.dart';
 
-
 class ConfirmReservationUI extends StatefulWidget {
   final String roomNumber;
   final String roomType;
@@ -58,59 +57,77 @@ class _ConfirmReservationUIState extends State<ConfirmReservationUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue,
         title: Text('Confirm Reservation ${widget.bookId}'),
+         
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: _roomDataFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else {
-              final roomData = snapshot.data!;
-              final roomNumber = roomData['roomNumber'];
-              final roomType = roomData['roomType'];
-              final roomPrice = roomData['roomPrice'];
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Room Type: $roomType'),
-                  Text('Room Number: $roomNumber'),
-                  Text('Check-In: ${widget.checkInDate}'),
-                  Text('Check-Out: ${widget.checkOutDate}'),
-                  SizedBox(height: 20),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'รอการชำระเงิน'),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (BuildContext context) => ConfirmPaymentUI(
-                            bookId: widget.bookId,
-                            custId: widget.custId,
-                            roomId: widget.roomId,
-                            roomNumber: widget.roomNumber,
-                            roomType: widget.roomType,
-                            roomPrice: roomPrice,
-                            checkInDate: widget.checkInDate,
-                            checkOutDate: widget.checkOutDate,
+      body: SingleChildScrollView(
+        // To prevent overflow
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: FutureBuilder<Map<String, dynamic>>(
+            future: _roomDataFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                final roomData = snapshot.data!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Room Type: ${roomData['roomType']}',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    Text('Room Number: ${roomData['roomNumber']}',
+                        style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 8),
+                    Text('Check-In: ${widget.checkInDate}',
+                        style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 8),
+                    Text('Check-Out: ${widget.checkOutDate}',
+                        style: TextStyle(fontSize: 16)),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        labelText: 'จำนวนเข้าพัก',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) => ConfirmPaymentUI(
+                              bookId: widget.bookId,
+                              custId: widget.custId,
+                              roomId: widget.roomId,
+                              roomNumber: widget.roomNumber,
+                              roomType: widget.roomType,
+                              roomPrice: roomData['roomPrice'],
+                              checkInDate: widget.checkInDate,
+                              checkOutDate: widget.checkOutDate,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: Text('Confirm Booking'),
-                  ),
-                ],
-              );
-            }
-          },
+                        );
+                      },
+                      child: Text('Confirm Booking'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.green, // Text color
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
         ),
       ),
     );

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, prefer_const_declarations
 
 import 'dart:convert';
 
@@ -9,6 +9,254 @@ import 'package:project1/bookings.dart';
 import 'package:project1/profile.dart';
 import 'package:project1/roomlist.dart';
 
+class ChatBot extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(70.0),
+      child: Column(
+        children: [
+          Text(
+            'คุณมีคำถามหรือข้อสงสัยอะไรเกี่ยวกับการจองห้องพักไหมครับ?',
+            style: TextStyle(fontSize: 16.0),
+          ),
+          SizedBox(height: 8.0),
+         ElevatedButton(
+  onPressed: () {
+    showGeneralDialog(
+      context: context,
+      pageBuilder: (BuildContext buildContext,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation) {
+        return Builder(
+          builder: (BuildContext context) {
+            return Dialog(
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              child: ChatBotDialog(),
+            );
+          },
+        );
+      },
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.5),
+      barrierLabel: '',
+      transitionDuration: Duration(milliseconds: 300),
+      transitionBuilder: (BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+    );
+  },
+  child: Text(
+    'เริ่มการสนทนากับแชทบอท',
+    style: TextStyle(
+      fontSize: 16.0,
+      color: Colors.white,
+    ),
+  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.blue,
+    padding: EdgeInsets.symmetric(
+      vertical: 12.0,
+      horizontal: 24.0,
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10.0),
+    ),
+  ),
+),
+
+        ],
+      ),
+    );
+  }
+}
+
+class ChatBotDialog extends StatefulWidget {
+  @override
+  _ChatBotDialogState createState() => _ChatBotDialogState();
+}
+
+class _ChatBotDialogState extends State<ChatBotDialog> {
+  TextEditingController messageController = TextEditingController();
+  List<String> chatMessages = [];
+
+  @override
+  Widget build(BuildContext context) {
+    // ดึงขนาดหน้าจอของอุปกรณ์
+    final screenSize = MediaQuery.of(context).size;
+
+    return Container(
+      width: screenSize.width * 0.8, // ใช้ 80% ของความกว้างของหน้าจอ
+      padding: EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'แชทบอท',
+            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.blue),
+          ),
+          SizedBox(height: 20.0),
+          Expanded(
+            child: ListView.builder(
+              itemCount: chatMessages.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  title: Text(
+                    chatMessages[index],
+                    style: TextStyle(
+                      color: chatMessages[index].startsWith('คุณ')
+                          ? Colors.blue
+                          : Colors.green,
+                      fontSize: 16.0,
+                    ),
+                  ),
+                  tileColor: chatMessages[index].startsWith('คุณ')
+                      ? Colors.grey[200]
+                      : Colors.grey[300],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 10.0),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: messageController,
+                  decoration: InputDecoration(
+                    hintText: 'พิมพ์ข้อความ...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10.0),
+              ElevatedButton(
+                onPressed: () async {
+                  // Add user message to chat messages
+                  setState(() {
+                    chatMessages.add('คุณ: ${messageController.text}');
+                  });
+
+                  // Store user message to MySQL
+                  await storeMessageToMySQL(messageController.text);
+
+                  // Generate response and add to chat messages
+                  String response =
+                      await generateResponse(messageController.text);
+                  setState(() {
+                    chatMessages.add('แชทบอท: $response');
+                  });
+
+                  // Clear message controller after sending message
+                  messageController.clear();
+                },
+                child: Text('ส่ง'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('ปิด'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+  Future<String> fetchResponseFromAPI(String query) async {
+    final response = await http.get(
+      Uri.parse('https://s6319410013.sautechnology.com/apiproject/chatbot.php'),
+    );
+
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to fetch response from API');
+    }
+  }
+
+  Future<String> generateResponse(String message) async {
+    if (message.contains('จอง')) {
+      return 'คุณสามารถทำการจองห้องพักได้โดยการคลิกที่ปุ่มเลือกประเภทห้องจากด้านบนได้เลยครับ';
+    } else if (message.contains('ราคา')) {
+      try {
+        // Fetch response from API
+        String response = await fetchResponseFromAPI('ราคาห้องพัก');
+        // Decode the response from JSON format
+        List<dynamic> responseData = json.decode(response);
+        // Construct a user-friendly message
+        String formattedResponse = 'รายการห้องพัก\n';
+        for (var room in responseData) {
+          formattedResponse +=
+              'ประเภท: ${room['roomType']}, ราคา: ${room['roomPrice']} บาท\n';
+        }
+        return formattedResponse;
+      } catch (error) {
+        return 'ขอโทษครับ ไม่สามารถแสดงรายการห้องพักในขณะนี้';
+      }
+    } else {
+      return 'ขอโทษครับ ฉันไม่เข้าใจคำถามของคุณ กรุณาลองถามใหม่อีกครั้ง หรือโทรหาเราได้ที่ 0648050398';
+    }
+  }
+
+
+Future<void> storeMessageToMySQL(String message) async {
+  try {
+    final response = await http.post(
+      Uri.parse(
+          'https://s6319410013.sautechnology.com/apiproject/store_message.php'),
+      body: json.encode({'message': message}),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      print('Message stored successfully');
+    } else {
+      print('Failed to store message');
+    }
+  } catch (error) {
+    print('Error storing message: $error');
+  }
+}
+
 class HomeUI extends StatefulWidget {
   final String custId;
   final String custFullname; // Add this line
@@ -16,16 +264,14 @@ class HomeUI extends StatefulWidget {
   final String roomId; // Add this line
   final String bookId; // Add this line
 
-  HomeUI(
-      {Key? key,
-      required this.custId,
-      required this.custFullname,
-      required this.roomType,
-      required this.roomId,
-      required this.bookId,
-      
-      })
-      : super(key: key);
+  HomeUI({
+    Key? key,
+    required this.custId,
+    required this.custFullname,
+    required this.roomType,
+    required this.roomId,
+    required this.bookId,
+  }) : super(key: key);
 
   @override
   _HomeUIState createState() => _HomeUIState();
@@ -37,7 +283,6 @@ class _HomeUIState extends State<HomeUI> {
   late final String custId;
   late final String roomType;
   late final String bookId;
-  
 
   @override
   void initState() {
@@ -49,6 +294,7 @@ class _HomeUIState extends State<HomeUI> {
 
     // Call the function to check and delete expired bookings
     checkAndDeleteExpiredBookings();
+    checkAndDeleteRoomQRs();
   }
 
   @override
@@ -79,7 +325,11 @@ class _HomeUIState extends State<HomeUI> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => BookingsUI(custId: widget.custId, bookId: widget.bookId, roomId: widget.roomId,)),
+                  builder: (context) => BookingsUI(
+                        custId: widget.custId,
+                        bookId: widget.bookId,
+                        roomId: widget.roomId,
+                      )),
             );
           } else if (newIndex == 2) {
             Navigator.push(
@@ -138,6 +388,8 @@ class _HomeUIState extends State<HomeUI> {
         _buildRoomTypeButton('Standard'),
         SizedBox(height: 20),
         _buildRoomTypeButton('Suite'),
+        SizedBox(height: 20),
+        ChatBot(),
       ],
     );
   }
@@ -149,7 +401,13 @@ class _HomeUIState extends State<HomeUI> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RoomList(roomType: roomType, custId: custId, roomId:'' ,roomPrice:'', bookId: '',),
+            builder: (context) => RoomList(
+              roomType: roomType,
+              custId: custId,
+              roomId: '',
+              roomPrice: '',
+              bookId: '',
+            ),
           ),
         );
       },
@@ -190,10 +448,10 @@ Future<List<Map<String, dynamic>>> fetchRoomData(roomType) async {
   }
 }
 
-// Function to check and delete expired bookings
 void checkAndDeleteExpiredBookings() async {
   final response = await http.get(
-    Uri.parse('https://s6319410013.sautechnology.com/apiproject/expird_books.php'),
+    Uri.parse(
+        'https://s6319410013.sautechnology.com/apiproject/expird_books.php'),
   );
 
   if (response.statusCode == 200) {
@@ -203,3 +461,26 @@ void checkAndDeleteExpiredBookings() async {
   }
 }
 
+Future<void> checkAndDeleteRoomQRs() async {
+  try {
+    var response = await http.get(
+      Uri.parse('https://s6319410013.sautechnology.com/apiproject/check_delete_roomqr.php'),
+    );
+
+    if (response.statusCode == 200) {
+      var responseData = json.decode(response.body);
+      if (responseData['error'] != null) {
+        print('Error: ${responseData['error']}');
+      } else if (responseData['success'] != null) {
+        print(responseData['success']);
+        print('Deleted IDs: ${responseData['deleted']}');
+      } else {
+        print(responseData['message']);
+      }
+    } else {
+      print('Failed to connect to the API');
+    }
+  } catch (e) {
+    print('Error: $e');
+  }
+}

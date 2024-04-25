@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:project1/roomdetails.dart';
 
@@ -11,7 +12,12 @@ class RoomList extends StatefulWidget {
   final String bookId;
   final String roomPrice;
 
-  RoomList({required this.roomType, required this.custId, required this.roomId, required this.roomPrice, required this.bookId});
+  RoomList(
+      {required this.roomType,
+      required this.custId,
+      required this.roomId,
+      required this.roomPrice,
+      required this.bookId});
 
   @override
   _RoomListState createState() => _RoomListState();
@@ -45,6 +51,7 @@ class _RoomListState extends State<RoomList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue,
         title: Text('Room List ${widget.custId}'),
       ),
       body: rooms == null
@@ -55,16 +62,30 @@ class _RoomListState extends State<RoomList> {
               itemCount: rooms!.length,
               itemBuilder: (context, index) {
                 return Card(
+                  elevation: 4, // เพิ่มเงาให้กับรายการห้อง
+                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16), // กำหนดระยะห่างรอบขอบ
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16), // กำหนดรูปร่างของรายการห้อง
+                  ),
                   child: ListTile(
-                    title: Text('Room Number: ${rooms![index]['roomNumber']}'),
+                    title: Text(
+                      'Room Number: ${rooms![index]['roomNumber']}',
+                      style: GoogleFonts.kanit(), // ใช้ Google Fonts
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Room Type: ${rooms![index]['roomType']}'),
                         Text(
-                            'Room Price: ${rooms![index]['roomPrice']}'), // ไม่แปลงให้เป็น double แล้ว
+                          'Room Type: ${rooms![index]['roomType']}',
+                          style: GoogleFonts.kanit(), // ใช้ Google Fonts
+                        ),
+                        Text(
+                          'Room Price: ${rooms![index]['roomPrice']}',
+                          style: GoogleFonts.kanit(), // ใช้ Google Fonts
+                        ),
                       ],
                     ),
+                    tileColor: Colors.blue[50], // กำหนดสีพื้นหลังของรายการห้อง
                     onTap: () {
                       // ตรวจสอบว่า custId ไม่ใช่ null ก่อนที่จะเปลี่ยนหน้า
                       if (widget.custId != null) {
@@ -76,13 +97,11 @@ class _RoomListState extends State<RoomList> {
                               roomType: rooms![index]['roomType'],
                               roomId: rooms![index]['roomId'],
                               policy: rooms![index]['policy'],
-                            
                               roomPrice:
                                   double.parse(rooms![index]['roomPrice']),
                               custId: double.parse(
                                   widget.custId), // แปลงเป็น double ก่อนส่ง
-                             bookId: widget.bookId.toString(),
-
+                              bookId: widget.bookId.toString(),
                               roomImage: rooms![index]['roomImage'],
                             ),
                           ),

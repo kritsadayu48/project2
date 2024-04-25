@@ -195,8 +195,19 @@ class _UploadPaymentPageState extends State<UploadPaymentPage> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => _uploadImage(context), // Pass context here
-                child: Text('Upload Payment'),
+                onPressed: () => _uploadImage(context),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue, // Text color
+                  padding: EdgeInsets.symmetric(vertical: 16), // Button padding
+                ),
+                child: Text(
+                  'Upload Payment',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Roboto', // Use Google Fonts
+                  ),
+                ),
               ),
             ],
           ),

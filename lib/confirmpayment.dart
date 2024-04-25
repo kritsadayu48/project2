@@ -35,69 +35,88 @@ class _ConfirmPaymentUIState extends State<ConfirmPaymentUI> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text('Payment Method ${widget.bookId}'),
+        backgroundColor:
+            Colors.blue, // Consistent color with the previous screen
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Room Type: ${widget.roomType}'),
-            Text('Room Number: ${widget.roomNumber}'),
-            Text('Check-in Date: ${widget.checkInDate}'),
-            Text('Check-out Date: ${widget.checkOutDate}'),
-            Text('Price: ${widget.roomPrice}'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Add your payment logic here
-
-                // Navigate to the next screen or show confirmation message
-
-                // Generate QR code
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Payment Confirmation'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('กรุณาสแกนเพื่อชำระ'),
-                          SizedBox(height: 10),
-                          QRCodeGenerate(
-                            promptPayId:
-                                '0648050398', // ระบุ PromptPay ID ของคุณที่นี่
-                            amount:
-                                widget.roomPrice, // ระบุจำนวนเงินที่ต้องการชำระ
-                            width: 400,
-                            height: 400,
+      body: SingleChildScrollView(
+        // To prevent overflow
+        child: Padding(
+          padding:  EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Room Type: ${widget.roomType}',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              Text('Room Number: ${widget.roomNumber}',
+                  style: TextStyle(fontSize: 16)),
+              SizedBox(height: 8),
+              Text('Check-in Date: ${widget.checkInDate}',
+                  style: TextStyle(fontSize: 16)),
+              SizedBox(height: 8),
+              Text('Check-out Date: ${widget.checkOutDate}',
+                  style: TextStyle(fontSize: 16)),
+              SizedBox(height: 8),
+              Text('Price: \ ${widget.roomPrice.toStringAsFixed(2)} บาท',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  // Generate QR code
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Payment Confirmation'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('กรุณาสแกนเพื่อชำระ'),
+                            SizedBox(height: 10),
+                            QRCodeGenerate(
+                              promptPayId: '0648050398',
+                              amount: widget.roomPrice,
+                              width: 400,
+                              height: 400,
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => UploadPaymentPage(
+                                    custId: widget.custId,
+                                    bookId: widget.bookId,
+                                    roomId: widget.roomId,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Text('Upload Payment Image'),
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 32, vertical: 12),
+                            ),
                           ),
                         ],
-                      ),
-                      actions: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => UploadPaymentPage(
-                                  custId: widget.custId,
-                                  bookId: widget.bookId,
-                                  roomId: widget.roomId,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Text('Upload Payment Image'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: Text('Confirm Payment'),
-            ),
-          ],
+                      );
+                    },
+                  );
+                },
+                child: Text('Confirm Payment'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  textStyle: TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
