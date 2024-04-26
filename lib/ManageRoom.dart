@@ -271,7 +271,7 @@ class _ManageRoomUIState extends State<ManageRoomUI> {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => QRScanScreen(cameras: cameras ?? []),
+                builder: (context) => QRScanScreen(cameras: cameras ?? [], custId: widget.custId, roomId: widget.roomId,),
               ),
             );
           }
