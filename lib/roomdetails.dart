@@ -36,7 +36,7 @@ class _RoomdetailsUIState extends State<RoomdetailsUI> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Text('รายละเอียดห้อง ${widget.custId}'),
+        title: Text('รายละเอียดห้องพัก'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -188,6 +188,7 @@ class _RoomdetailsUIState extends State<RoomdetailsUI> {
                       roomPrice: widget.roomPrice,
                       bookPrice: widget.roomPrice,
                       roomNumber: widget.roomNumber,
+                      roomStatus: '',
                       roomId: widget.roomId,
                       bookId: widget.bookId,
                       custId: widget.custId.toString(),

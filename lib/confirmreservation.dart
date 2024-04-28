@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:project1/confirmpayment.dart';
-
+//////////ไม่ใช้แล้ว//////////////
 class ConfirmReservationUI extends StatefulWidget {
   final String roomNumber;
   final String roomType;
   final double roomPrice;
   final String checkInDate;
+  final String roomStatus;
   final String checkOutDate;
   final String roomId;
   final String bookId;
@@ -19,6 +20,7 @@ class ConfirmReservationUI extends StatefulWidget {
     required this.roomId,
     required this.custId,
     required this.bookId,
+    required this.roomStatus,
     required this.checkInDate,
     required this.checkOutDate,
     required double bookPrice,
@@ -58,7 +60,7 @@ class _ConfirmReservationUIState extends State<ConfirmReservationUI> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Text('Confirm Reservation ${widget.bookId}'),
+        title: Text('ยืนยันรายละเอียดการจอง'),
          
       ),
       body: SingleChildScrollView(
@@ -77,17 +79,17 @@ class _ConfirmReservationUIState extends State<ConfirmReservationUI> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Room Type: ${roomData['roomType']}',
+                    Text('ประเภทห้อง: ${roomData['roomType']}',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
-                    Text('Room Number: ${roomData['roomNumber']}',
+                    Text('หมายเลขห้อง: ${roomData['roomNumber']}',
                         style: TextStyle(fontSize: 16)),
                     SizedBox(height: 8),
-                    Text('Check-In: ${widget.checkInDate}',
+                    Text('เช็คอิน: ${widget.checkInDate}',
                         style: TextStyle(fontSize: 16)),
                     SizedBox(height: 8),
-                    Text('Check-Out: ${widget.checkOutDate}',
+                    Text('เช็คเอาท์: ${widget.checkOutDate}',
                         style: TextStyle(fontSize: 16)),
                     SizedBox(height: 20),
                     TextFormField(
@@ -107,6 +109,7 @@ class _ConfirmReservationUIState extends State<ConfirmReservationUI> {
                               custId: widget.custId,
                               roomId: widget.roomId,
                               roomNumber: widget.roomNumber,
+                              roomStatus: widget.roomStatus,
                               roomType: widget.roomType,
                               roomPrice: roomData['roomPrice'],
                               checkInDate: widget.checkInDate,
@@ -115,7 +118,7 @@ class _ConfirmReservationUIState extends State<ConfirmReservationUI> {
                           ),
                         );
                       },
-                      child: Text('Confirm Booking'),
+                      child: Text('ยืนยันการจองและจ่ายเงิน'),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.green, // Text color

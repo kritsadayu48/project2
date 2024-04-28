@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:project1/bookings.dart';
+import 'package:project1/login.dart';
 import 'package:project1/profile.dart';
 import 'package:project1/roomlist.dart';
+
+
 
 class ChatBot extends StatelessWidget {
   @override
@@ -21,57 +24,56 @@ class ChatBot extends StatelessWidget {
             style: TextStyle(fontSize: 16.0),
           ),
           SizedBox(height: 8.0),
-         ElevatedButton(
-  onPressed: () {
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (BuildContext buildContext,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation) {
-        return Builder(
-          builder: (BuildContext context) {
-            return Dialog(
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              child: ChatBotDialog(),
-            );
-          },
-        );
-      },
-      barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.5),
-      barrierLabel: '',
-      transitionDuration: Duration(milliseconds: 300),
-      transitionBuilder: (BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-    );
-  },
-  child: Text(
-    'เริ่มการสนทนากับแชทบอท',
-    style: TextStyle(
-      fontSize: 16.0,
-      color: Colors.white,
-    ),
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.blue,
-    padding: EdgeInsets.symmetric(
-      vertical: 12.0,
-      horizontal: 24.0,
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10.0),
-    ),
-  ),
-),
-
+          ElevatedButton(
+            onPressed: () {
+              showGeneralDialog(
+                context: context,
+                pageBuilder: (BuildContext buildContext,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation) {
+                  return Builder(
+                    builder: (BuildContext context) {
+                      return Dialog(
+                        elevation: 0,
+                        backgroundColor: Colors.transparent,
+                        child: ChatBotDialog(),
+                      );
+                    },
+                  );
+                },
+                barrierDismissible: false,
+                barrierColor: Colors.black.withOpacity(0.5),
+                barrierLabel: '',
+                transitionDuration: Duration(milliseconds: 300),
+                transitionBuilder: (BuildContext context,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation,
+                    Widget child) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+              );
+            },
+            child: Text(
+              'เริ่มการสนทนากับแชทบอท',
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              padding: EdgeInsets.symmetric(
+                vertical: 12.0,
+                horizontal: 24.0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -104,7 +106,10 @@ class _ChatBotDialogState extends State<ChatBotDialog> {
         children: [
           Text(
             'แชทบอท',
-            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.blue),
+            style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue),
           ),
           SizedBox(height: 20.0),
           Expanded(
@@ -200,43 +205,41 @@ class _ChatBotDialogState extends State<ChatBotDialog> {
   }
 }
 
+Future<String> fetchResponseFromAPI(String query) async {
+  final response = await http.get(
+    Uri.parse('https://s6319410013.sautechnology.com/apiproject/chatbot.php'),
+  );
 
-  Future<String> fetchResponseFromAPI(String query) async {
-    final response = await http.get(
-      Uri.parse('https://s6319410013.sautechnology.com/apiproject/chatbot.php'),
-    );
-
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to fetch response from API');
-    }
+  if (response.statusCode == 200) {
+    return response.body;
+  } else {
+    throw Exception('Failed to fetch response from API');
   }
+}
 
-  Future<String> generateResponse(String message) async {
-    if (message.contains('จอง')) {
-      return 'คุณสามารถทำการจองห้องพักได้โดยการคลิกที่ปุ่มเลือกประเภทห้องจากด้านบนได้เลยครับ';
-    } else if (message.contains('ราคา')) {
-      try {
-        // Fetch response from API
-        String response = await fetchResponseFromAPI('ราคาห้องพัก');
-        // Decode the response from JSON format
-        List<dynamic> responseData = json.decode(response);
-        // Construct a user-friendly message
-        String formattedResponse = 'รายการห้องพัก\n';
-        for (var room in responseData) {
-          formattedResponse +=
-              'ประเภท: ${room['roomType']}, ราคา: ${room['roomPrice']} บาท\n';
-        }
-        return formattedResponse;
-      } catch (error) {
-        return 'ขอโทษครับ ไม่สามารถแสดงรายการห้องพักในขณะนี้';
+Future<String> generateResponse(String message) async {
+  if (message.contains('จอง')) {
+    return 'คุณสามารถทำการจองห้องพักได้โดยการคลิกที่ปุ่มเลือกประเภทห้องจากด้านบนได้เลยครับ';
+  } else if (message.contains('ราคา')) {
+    try {
+      // Fetch response from API
+      String response = await fetchResponseFromAPI('ราคาห้องพัก');
+      // Decode the response from JSON format
+      List<dynamic> responseData = json.decode(response);
+      // Construct a user-friendly message
+      String formattedResponse = 'รายการห้องพัก\n';
+      for (var room in responseData) {
+        formattedResponse +=
+            'ประเภท: ${room['roomType']}, ราคา: ${room['roomPrice']} บาท\n';
       }
-    } else {
-      return 'ขอโทษครับ ฉันไม่เข้าใจคำถามของคุณ กรุณาลองถามใหม่อีกครั้ง หรือโทรหาเราได้ที่ 0648050398';
+      return formattedResponse;
+    } catch (error) {
+      return 'ขอโทษครับ ไม่สามารถแสดงรายการห้องพักในขณะนี้';
     }
+  } else {
+    return 'ขอโทษครับ ฉันไม่เข้าใจคำถามของคุณ กรุณาลองถามใหม่อีกครั้ง หรือโทรหาเราได้ที่ 0648050398';
   }
-
+}
 
 Future<void> storeMessageToMySQL(String message) async {
   try {
@@ -296,6 +299,16 @@ class _HomeUIState extends State<HomeUI> {
     checkAndDeleteExpiredBookings();
     checkAndDeleteRoomQRs();
   }
+  void logout() {
+  // Clear user data or authentication token if stored
+
+  // Navigate to the login screen or just pop all screens to return to the login screen
+  Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(builder: (context) => LoginUI()), // Replace LoginScreen with your login screen widget
+    (Route<dynamic> route) => false,
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +317,14 @@ class _HomeUIState extends State<HomeUI> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         title: Text('Welcome: ${widget.custFullname}'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: (){
+              logout();
+            },
+            child: Text('Logout', style: TextStyle(color: Colors.white)),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -464,7 +485,8 @@ void checkAndDeleteExpiredBookings() async {
 Future<void> checkAndDeleteRoomQRs() async {
   try {
     var response = await http.get(
-      Uri.parse('https://s6319410013.sautechnology.com/apiproject/check_delete_roomqr.php'),
+      Uri.parse(
+          'https://s6319410013.sautechnology.com/apiproject/check_delete_roomqr.php'),
     );
 
     if (response.statusCode == 200) {

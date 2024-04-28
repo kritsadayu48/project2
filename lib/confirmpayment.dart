@@ -8,6 +8,7 @@ class ConfirmPaymentUI extends StatefulWidget {
   final double roomPrice;
   final String checkInDate;
   final String checkOutDate;
+  final String roomStatus;
   final String custId;
   final String bookId;
   final String roomId;
@@ -22,6 +23,7 @@ class ConfirmPaymentUI extends StatefulWidget {
     required this.roomId,
     required this.checkInDate,
     required this.checkOutDate,
+    required this.roomStatus,
   }) : super(key: key);
 
   @override
@@ -34,7 +36,7 @@ class _ConfirmPaymentUIState extends State<ConfirmPaymentUI> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Payment Method ${widget.bookId}'),
+        title: Text('ตรวจสอบรายละเอียดและชำระเงิน '),
         backgroundColor:
             Colors.blue, // Consistent color with the previous screen
       ),
@@ -45,19 +47,19 @@ class _ConfirmPaymentUIState extends State<ConfirmPaymentUI> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Room Type: ${widget.roomType}',
+              Text('ประเภทห้อง: ${widget.roomType}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
-              Text('Room Number: ${widget.roomNumber}',
+              Text('หมายเลขห้อง: ${widget.roomNumber}',
                   style: TextStyle(fontSize: 16)),
               SizedBox(height: 8),
-              Text('Check-in Date: ${widget.checkInDate}',
+              Text('เช็คอิน: ${widget.checkInDate}',
                   style: TextStyle(fontSize: 16)),
               SizedBox(height: 8),
-              Text('Check-out Date: ${widget.checkOutDate}',
+              Text('เช็คเอาท์: ${widget.checkOutDate}',
                   style: TextStyle(fontSize: 16)),
               SizedBox(height: 8),
-              Text('Price: \ ${widget.roomPrice.toStringAsFixed(2)} บาท',
+              Text('ราคา: \ ${widget.roomPrice.toStringAsFixed(2)} บาท',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 20),
               ElevatedButton(
@@ -67,7 +69,7 @@ class _ConfirmPaymentUIState extends State<ConfirmPaymentUI> {
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        title: Text('Payment Confirmation'),
+                        title: Text(''),
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -91,11 +93,12 @@ class _ConfirmPaymentUIState extends State<ConfirmPaymentUI> {
                                     custId: widget.custId,
                                     bookId: widget.bookId,
                                     roomId: widget.roomId,
+                                    roomStatus: widget.roomStatus,
                                   ),
                                 ),
                               );
                             },
-                            child: Text('Upload Payment Image'),
+                            child: Text('อัพโหลดหลักฐานการชำระเงิน'),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white, backgroundColor: Colors.green, // Text color
                               padding: EdgeInsets.symmetric(
@@ -107,7 +110,7 @@ class _ConfirmPaymentUIState extends State<ConfirmPaymentUI> {
                     },
                   );
                 },
-                child: Text('Confirm Payment'),
+                child: Text('ยืนยันการจ่ายเงิน'),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.green,

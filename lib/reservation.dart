@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:project1/confirmreservation.dart';
+import 'package:project1/confirmpayment.dart';
 
 class ReservationUI extends StatefulWidget {
   final String roomNumber;
@@ -9,6 +9,7 @@ class ReservationUI extends StatefulWidget {
   final double roomPrice;
   final double bookPrice;
   final String custId;
+  final String roomStatus;
   final String roomId;
   final String bookId;
 
@@ -18,6 +19,7 @@ class ReservationUI extends StatefulWidget {
     required this.roomType,
     required this.roomPrice,
     required this.bookPrice,
+    required this.roomStatus,
     required this.custId,
     required this.bookId,
     required this.roomId,
@@ -76,9 +78,9 @@ class _ReservationUIState extends State<ReservationUI> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Warning'),
+                title: Text('ห้องเต็ม'),
                 content: Text(
-                    'The room has already been booked for this date and time.'),
+                    'ห้องนี้ในระหว่างวันที่ท่านจองมีการจองจากลูกค้าท่านอื่นแล้ว กรุณาเลือกห้องอื่นหรือวันอื่น'),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -98,8 +100,8 @@ class _ReservationUIState extends State<ReservationUI> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Success'),
-                content: Text('Room booked successfully'),
+                title: Text('สำเร็จ'),
+                content: Text('ทำการจองเรียบร้อยกรุณาตรวจสอบรายละเอียดอีกครั้งที่หน้าถัดไป'),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -107,12 +109,12 @@ class _ReservationUIState extends State<ReservationUI> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ConfirmReservationUI(
+                          builder: (_) => ConfirmPaymentUI(
                             roomNumber: widget.roomNumber,
                             roomType: widget.roomType,
                             roomId: widget.roomId,
                             roomPrice: widget.roomPrice,
-                            bookPrice: widget.roomPrice,
+                            roomStatus: widget.roomStatus,
                             checkInDate: _checkInController.text,
                             checkOutDate: _checkOutController.text,
                             custId: widget.custId,
@@ -130,7 +132,7 @@ class _ReservationUIState extends State<ReservationUI> {
           );
         }
       } else {
-        print('Failed to book room');
+        print('ทำการจองไม่สำเร็จ กรุณาลองอีกครั้ง');
       }
     } catch (error) {
       print('Error: $error');
@@ -177,7 +179,8 @@ class _ReservationUIState extends State<ReservationUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reservation ${widget.custId}roomId${widget.roomId}'),
+        backgroundColor: Colors.blue,
+        title: Text('เลือกวันที่จะทำการเข้าพัก'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -191,7 +194,7 @@ class _ReservationUIState extends State<ReservationUI> {
                   child: TextFormField(
                     controller: _checkInController,
                     decoration: InputDecoration(
-                      labelText: 'Check-in Date',
+                      labelText: 'วันเช็คอิน',
                       suffixIcon: IconButton(
                         icon: Icon(Icons.clear),
                         onPressed: () {
@@ -212,7 +215,7 @@ class _ReservationUIState extends State<ReservationUI> {
                   child: TextFormField(
                     controller: _checkOutController,
                     decoration: InputDecoration(
-                      labelText: 'Check-out Date',
+                      labelText: 'วันเช็คเอาท์',
                       suffixIcon: IconButton(
                         icon: Icon(Icons.clear),
                         onPressed: () {
@@ -229,7 +232,7 @@ class _ReservationUIState extends State<ReservationUI> {
               SizedBox(height: 32.0),
               ElevatedButton(
                 onPressed: _bookRoom,
-                child: Text('Book Now'),
+                child: Text('จอง'),
                 style: ButtonStyle(
                   // Set a linear gradient background
                   backgroundColor: MaterialStateProperty.resolveWith<Color?>(

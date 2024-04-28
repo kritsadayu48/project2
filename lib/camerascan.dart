@@ -28,7 +28,8 @@ class _QRScanScreenState extends State<QRScanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Scan QR Code ${widget.custId},roomId${widget.roomId}'),
+        backgroundColor: Colors.blue,
+        title: Text('Scan QR Code'),
       ),
       body: Column(
         children: [
@@ -50,18 +51,25 @@ class _QRScanScreenState extends State<QRScanScreen> {
     );
   }
 
-  void _onQRViewCreated(QRViewController controller) {
-  controller.scannedDataStream.listen((scanData) {
-    if (!_isQRScanned && scanData.code != null) {
-      _updateRoomQRStatus(widget.custId, widget.roomId , scanData.code!);  // Now passing custId along with roomId
-      setState(() {
-        _isQRScanned = true;  // Consider when to reset this to allow for another scan
-      });
-    }
-  });
-}
+  void _updateActionLog(String actionLog) {
+    Navigator.pop(context, actionLog);
+  }
 
-  Future<void> _updateRoomQRStatus(String custId, String roomId, String s) async {
+  void _onQRViewCreated(QRViewController controller) {
+    controller.scannedDataStream.listen((scanData) {
+      if (!_isQRScanned && scanData.code != null) {
+        _updateRoomQRStatus(widget.custId, widget.roomId,
+            scanData.code!); // Now passing custId along with roomId
+        setState(() {
+          _isQRScanned =
+              true; // Consider when to reset this to allow for another scan
+        });
+      }
+    });
+  }
+
+  Future<void> _updateRoomQRStatus(
+      String custId, String roomId, String scannedCode) async {
     try {
       final response = await http.post(
         Uri.parse(
@@ -70,6 +78,7 @@ class _QRScanScreenState extends State<QRScanScreen> {
         body: jsonEncode({
           'custId': custId,
           'roomId': roomId,
+          'scannedCode': scannedCode,
         }),
       );
 
@@ -78,6 +87,11 @@ class _QRScanScreenState extends State<QRScanScreen> {
         if (jsonResponse['status'] == 'success') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Unlock command sent successfully")),
+          );
+          _updateActionLog('Unlocked door at ${DateTime.now()}');
+        } else if (jsonResponse['status'] == 'invalid_qr') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Invalid QR Code or not for this room")),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

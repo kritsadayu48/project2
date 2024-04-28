@@ -1,6 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,8 +8,8 @@ class RegisterUI extends StatelessWidget {
   final TextEditingController _fullnameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
-  Future<void> _register() async {
-    final url = Uri.parse('https://s6319410013.sautechnology.com/apiproject/register_api.php'); // แทนที่ด้วย URL ของ API ของคุณ
+  Future<void> _register(BuildContext context) async {
+    final url = Uri.parse('https://s6319410013.sautechnology.com/apiproject/register_api.php'); // Replace with your API URL
 
     final response = await http.post(
       url,
@@ -26,14 +23,35 @@ class RegisterUI extends StatelessWidget {
     );
 
     if (response.statusCode == 200) {
-      // ลงทะเบียนสำเร็จ
-      print('Registration successful');
-      // เพิ่มโค้ดสำหรับการแสดงข้อความหรือการนำทางไปยังหน้าอื่นตามความเหมาะสม
+      // Registration successful
+      _showDialog(context, "Success", "Registration successful.", true);
     } else {
-      // ลงทะเบียนไม่สำเร็จ
-      print('Registration failed');
-      // เพิ่มโค้ดสำหรับการแสดงข้อความหรือการทำสิ่งอื่นตามความเหมาะสม
+      // Registration failed
+      _showDialog(context, "Error", "Registration failed. Please try again.", false);
     }
+  }
+
+  void _showDialog(BuildContext context, String title, String message, bool isSuccess) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                if (isSuccess) {
+                  Navigator.pop(context); // Navigate back to Login UI
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -63,7 +81,6 @@ class RegisterUI extends StatelessWidget {
                 controller: _fullnameController,
                 decoration: InputDecoration(labelText: 'Fullname'),
               ),
-              SizedBox(height: 20.0),
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(labelText: 'Username'),
@@ -88,12 +105,12 @@ class RegisterUI extends StatelessWidget {
               ),
               SizedBox(height: 20.0),
               ElevatedButton(
-                onPressed: _register,
+                onPressed: () => _register(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // สีพื้นหลังของปุ่ม
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30), // ขนาดของปุ่ม
+                  backgroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5), // รูปร่างของปุ่ม
+                    borderRadius: BorderRadius.circular(5),
                   ),
                 ),
                 child: Text(
@@ -101,14 +118,14 @@ class RegisterUI extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white, // สีของข้อความในปุ่ม
+                    color: Colors.white,
                   ),
                 ),
               ),
               SizedBox(height: 10.0),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // กลับไปยังหน้า LoginUI
+                  Navigator.pop(context); // Go back to LoginUI
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

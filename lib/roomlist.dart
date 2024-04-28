@@ -52,7 +52,7 @@ class _RoomListState extends State<RoomList> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Text('Room List ${widget.custId}'),
+        title: Text('รายการห้องพัก'),
       ),
       body: rooms == null
           ? Center(

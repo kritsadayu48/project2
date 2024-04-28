@@ -11,9 +11,10 @@ class UploadPaymentPage extends StatefulWidget {
   final String bookId;
   final String custId;
   final String roomId;
+  final String roomStatus;
 
   UploadPaymentPage(
-      {required this.bookId, required this.custId, required this.roomId});
+      {required this.bookId, required this.custId, required this.roomId, required this.roomStatus});
 
   @override
   _UploadPaymentPageState createState() => _UploadPaymentPageState();
@@ -49,7 +50,7 @@ class _UploadPaymentPageState extends State<UploadPaymentPage> {
         context: context,
         builder: (BuildContext context) => AlertDialog(
           title: Text('Error'),
-          content: Text('Please select an image.'),
+          content: Text('เลือกรูปก่อนอัพโหลด'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -102,7 +103,7 @@ class _UploadPaymentPageState extends State<UploadPaymentPage> {
                       builder: (_) => ManageRoomUI(
                         custId: widget.custId,
                         bookId: widget.bookId,
-                        roomId: widget.roomId,
+                        roomId: widget.roomId, roomType: widget.roomId, roomStatus: widget.roomStatus,
                       ),
                     ),
                   );
@@ -165,7 +166,8 @@ class _UploadPaymentPageState extends State<UploadPaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Upload Payment ${widget.custId}'),
+        backgroundColor: Colors.blue,
+        title: Text('อัพโหลดหลักฐานการชำระเงิน'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -202,7 +204,7 @@ class _UploadPaymentPageState extends State<UploadPaymentPage> {
                   padding: EdgeInsets.symmetric(vertical: 16), // Button padding
                 ),
                 child: Text(
-                  'Upload Payment',
+                  'อัพโหลด',
                   style: TextStyle(
                     fontSize: 16,
                     fontFamily: 'Roboto', // Use Google Fonts

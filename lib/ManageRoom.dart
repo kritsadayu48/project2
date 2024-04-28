@@ -1,4 +1,3 @@
-// ignore_for_file: sort_child_properties_last, prefer_const_constructors, prefer_const_literals_to_create_immutables
 import 'dart:convert';
 
 import 'package:camera/camera.dart';
@@ -13,13 +12,17 @@ class ManageRoomUI extends StatefulWidget {
   final String custId;
   final String bookId;
   final String roomId;
+  final String roomType;
+  String roomStatus;
 
-  ManageRoomUI(
-      {Key? key,
-      required this.custId,
-      required this.bookId,
-      required this.roomId})
-      : super(key: key);
+  ManageRoomUI({
+    Key? key,
+    required this.custId,
+    required this.bookId,
+    required this.roomId,
+    required this.roomType,
+    required this.roomStatus,
+  }) : super(key: key);
 
   @override
   _ManageRoomUIState createState() => _ManageRoomUIState();
@@ -27,6 +30,37 @@ class ManageRoomUI extends StatefulWidget {
 
 class _ManageRoomUIState extends State<ManageRoomUI> {
   int _currentIndex = 0;
+  List<String> _actionLog = [];
+
+  void _refreshScreen() {
+    fetchDoorStatus(widget.roomId);
+  }
+
+  Future<void> fetchDoorStatus(String roomId) async {
+    try {
+      var url = Uri.parse(
+          'https://s6319410013.sautechnology.com/apiproject/freshroom.php?roomId=$roomId');
+      var response = await http.get(url);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
+        // Check if roomQRStatus is int and convert to String
+        var roomQRStatus = data['roomQRStatus'];
+        if (roomQRStatus is int) {
+          roomQRStatus = roomQRStatus.toString();
+        }
+
+        setState(() {
+          widget.roomStatus = roomQRStatus;
+        });
+      } else {
+        print(
+            'Failed to fetch door status with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching door status: $e');
+    }
+  }
 
   Future<void> _checkUnlock(String roomId) async {
     try {
@@ -43,6 +77,7 @@ class _ManageRoomUIState extends State<ManageRoomUI> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Unlock command sent successfully")),
           );
+          _actionLog.insert(0, 'Unlocked door at ${DateTime.now()}');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -79,6 +114,7 @@ class _ManageRoomUIState extends State<ManageRoomUI> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Lock command sent successfully")),
           );
+          _actionLog.insert(0, 'Locked door at ${DateTime.now()}');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -106,18 +142,17 @@ class _ManageRoomUIState extends State<ManageRoomUI> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Confirmation"),
-          content: Text("Are you sure you want to unlock the door?"),
-          actions: [
+          content: Text("คุณต้องการปลดล็อคประตูใช่หรือไม่?"),
+          actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                _checkUnlock(widget.roomId);
+                Navigator.pop(context, true);
               },
               child: Text("Yes"),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.pop(context, false);
               },
               child: Text("No"),
             ),
@@ -133,7 +168,7 @@ class _ManageRoomUIState extends State<ManageRoomUI> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Confirmation"),
-          content: Text("Are you sure you want to lock the door?"),
+          content: Text("คุณต้องการล็อคประตูใช่หรือไม่?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -154,131 +189,221 @@ class _ManageRoomUIState extends State<ManageRoomUI> {
     );
   }
 
+  Future<void> _onQRScanResult(BuildContext context) async {
+    final cameras = await availableCameras();
+    if (cameras.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('No camera found'),
+            content: Text('No camera is available to use.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QRScanScreen(
+            cameras: cameras,
+            custId: widget.custId,
+            roomId: widget.roomId,
+          ),
+        ),
+      );
+      if (result != null) {
+        setState(() {
+          _actionLog.insert(0, result);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('bookId${widget.bookId},roomId${widget.roomId}'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                _showUnlockWarningDialog(context);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lock_open),
-                  SizedBox(width: 15), // ระยะห่างระหว่างไอคอนกับข้อความ
-                  Text('Unlock Door'), // ข้อความบนปุ่ม
-                ],
-              ),
-            ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.02,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _showLockWarningDialog(context);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lock_sharp),
-                  SizedBox(width: 15), // ระยะห่างระหว่างไอคอนกับข้อความ
-                  Text('Lock Door'), // ข้อความบนปุ่ม
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int newIndex) {
-          setState(() {
-            _currentIndex = newIndex;
-          });
-          if (newIndex == 0) {
-            // Home page code
-            Navigator.popUntil(context, ModalRoute.withName('/'));
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HomeUI(custId:widget.custId, custFullname: '', roomType: '', roomId: '', bookId: '',),
-              ),
-            );
-          } else if (newIndex == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BookingsUI(
-                  custId: widget.custId,
-                  bookId: widget.bookId,
-                  roomId: widget.roomId,
-                ),
-              ),
-            );
-          } else if (newIndex == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileUI(custId: widget.custId),
-              ),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            label: 'Home',
-            icon: Icon(Icons.home),
-          ),
-          BottomNavigationBarItem(
-            label: 'Bookings',
-            icon: Icon(Icons.document_scanner),
-          ),
-          BottomNavigationBarItem(
-            label: 'Profile',
-            icon: Icon(Icons.person),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final cameras = await availableCameras();
-          if (cameras.isEmpty) {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text('No camera found'),
-                  content: Text('No camera is available to use.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text('OK'),
-                    ),
-                  ],
-                );
-              },
-            );
-          } else {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QRScanScreen(cameras: cameras ?? [], custId: widget.custId, roomId: widget.roomId,),
-              ),
-            );
-          }
-        },
-        child: Icon(Icons.qr_code_scanner),
-        tooltip: 'Manage Room ',
-      ),
-    );
-  }
+        backgroundColor: Colors.blue,
+        title: Text('ห้อง10${widget.roomId}'),actions: [
+ IconButton(
+   icon: Icon(Icons.refresh),
+   onPressed: () => _refreshScreen(),
+ ),
+],
+     ),
+     body: SingleChildScrollView(
+       child: Column(
+         children: [
+           SizedBox(height: 16),
+           Text(
+             'รายละเอียดห้องของท่าน',
+             style: TextStyle(
+               fontSize: 20,
+               fontWeight: FontWeight.bold,
+             ),
+           ),
+           SizedBox(height: 8),
+           Card(
+             child: Padding(
+               padding: EdgeInsets.all(16),
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   Row(
+                     children: [
+                       Icon(Icons.hotel),
+                       SizedBox(width: 8),
+                       Text('ประเภทห้อง: ${widget.roomType}'),
+                     ],
+                   ),
+                   SizedBox(height: 8),
+                   Row(
+                     children: [
+                       Icon(Icons.lock),
+                       SizedBox(width: 8),
+                       Text('สถาณะประตู: ${widget.roomStatus}'),
+                     ],
+                   ),
+                 ],
+               ),
+             ),
+           ),
+           SizedBox(height: 16),
+           Row(
+             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+             children: [
+               ElevatedButton(
+                 onPressed: widget.roomStatus == 'Locked'
+                     ? () {
+                         _showUnlockWarningDialog(context);
+                       }
+                     : () {
+                         _onQRScanResult(context);
+                       },
+                 child: Row(
+                   mainAxisSize: MainAxisSize.min,
+                   children: [
+                     Icon(widget.roomStatus == 'Locked'
+                         ? Icons.lock_open
+                         : Icons.lock),
+                     SizedBox(width: 15),
+                     Text(widget.roomStatus == 'Locked'
+                         ? 'Unlock Door'
+                         : 'Lock Door'),
+                   ],
+                 ),
+               ),
+               ElevatedButton(
+                 onPressed: widget.roomStatus == 'Locked'
+                     ? null
+                     : () {
+                         _showLockWarningDialog(context);
+                       },
+                 child: Row(
+                   mainAxisSize: MainAxisSize.min,
+                   children: [
+                     Icon(Icons.lock_sharp),
+                     SizedBox(width: 15),
+                     Text('Lock Door'),
+                   ],
+                 ),
+               ),
+             ],
+           ),
+           SizedBox(height: 16),
+           Text(
+             'ประวัติการล็อค/ปลดล็อค',
+             style: TextStyle(
+               fontSize: 20,
+               fontWeight: FontWeight.bold,
+             ),
+           ),
+           SizedBox(height: 8),
+           Card(
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: _actionLog.map((log) {
+                 return Padding(
+                   padding: EdgeInsets.all(8),
+                   child: Text(log),
+                 );
+               }).toList(),
+             ),
+           ),
+         ],
+       ),
+     ),
+     bottomNavigationBar: BottomNavigationBar(
+       currentIndex: _currentIndex,
+       onTap: (int newIndex) {
+         setState(() {
+           _currentIndex = newIndex;
+         });
+         if (newIndex == 0) {
+           Navigator.popUntil(context, ModalRoute.withName('/'));
+           Navigator.push(
+             context,
+             MaterialPageRoute(
+               builder: (context) => HomeUI(
+                 custId: widget.custId,
+                 custFullname: '',
+                 roomType: '',
+                 roomId: '',
+                 bookId: '',
+               ),
+             ),
+           );
+         } else if (newIndex == 1) {
+           Navigator.push(
+             context,
+             MaterialPageRoute(
+               builder: (context) => BookingsUI(
+                 custId: widget.custId,
+                 bookId: widget.bookId,
+                 roomId: widget.roomId,
+               ),
+             ),
+           );
+         } else if (newIndex == 2) {
+           Navigator.push(
+             context,
+             MaterialPageRoute(
+               builder: (context) => ProfileUI(custId: widget.custId),
+             ),
+           );
+         }
+       },
+       items: const [
+         BottomNavigationBarItem(
+           label: 'Home',
+           icon: Icon(Icons.home),
+         ),
+         BottomNavigationBarItem(
+           label: 'Bookings',
+           icon: Icon(Icons.document_scanner),
+         ),
+         BottomNavigationBarItem(
+           label: 'Profile',
+           icon: Icon(Icons.person),
+         ),
+       ],
+     ),
+     floatingActionButton: FloatingActionButton(
+       onPressed: () {
+         _onQRScanResult(context);
+       },
+       child: Icon(Icons.qr_code_scanner),
+       tooltip: 'Manage Room ',
+     ),
+   );
+ }
 }
