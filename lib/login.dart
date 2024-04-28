@@ -1,7 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:mysql1/mysql1.dart';
 import 'package:project1/%E0%B9%89home.dart';
-
 import 'package:project1/register.dart';
 
 class LoginUI extends StatelessWidget {
